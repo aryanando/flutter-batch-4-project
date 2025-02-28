@@ -1,8 +1,8 @@
 import 'package:hive/hive.dart';
 
-part 'trouble_report_model.g.dart'; // Needed for generated adapter
+part 'trouble_report_model.g.dart';
 
-@HiveType(typeId: 1) // Unique typeId for TroubleReport
+@HiveType(typeId: 1)
 class TroubleReport {
   @HiveField(0)
   final int id;
@@ -28,6 +28,9 @@ class TroubleReport {
   @HiveField(7)
   final List<ReportMedia> videos;
 
+  @HiveField(8) // New field for user ID
+  final int userId; // <-- This is the missing field you need
+
   TroubleReport({
     required this.id,
     required this.name,
@@ -37,6 +40,7 @@ class TroubleReport {
     this.solvedDate,
     required this.photos,
     required this.videos,
+    required this.userId, // Make sure it's required
   });
 
   factory TroubleReport.fromJson(Map<String, dynamic> json) {
@@ -57,11 +61,12 @@ class TroubleReport {
           .where((m) => m['type'] == 'video')
           .map((m) => ReportMedia.fromJson(m))
           .toList(),
+      userId: json['user_id'], // Make sure you parse this
     );
   }
 }
 
-@HiveType(typeId: 2) // Unique typeId for ReportMedia
+@HiveType(typeId: 2)
 class ReportMedia {
   @HiveField(0)
   final String filePath;
@@ -71,4 +76,8 @@ class ReportMedia {
   factory ReportMedia.fromJson(Map<String, dynamic> json) {
     return ReportMedia(filePath: json['file_path']);
   }
+
+  Map<String, dynamic> toJson() => {
+        'file_path': filePath,
+      };
 }

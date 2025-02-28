@@ -25,13 +25,14 @@ class TroubleReportAdapter extends TypeAdapter<TroubleReport> {
       solvedDate: fields[5] as DateTime?,
       photos: (fields[6] as List).cast<ReportMedia>(),
       videos: (fields[7] as List).cast<ReportMedia>(),
+      userId: fields[8] as int,
     );
   }
 
   @override
   void write(BinaryWriter writer, TroubleReport obj) {
     writer
-      ..writeByte(8)
+      ..writeByte(9)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -47,7 +48,9 @@ class TroubleReportAdapter extends TypeAdapter<TroubleReport> {
       ..writeByte(6)
       ..write(obj.photos)
       ..writeByte(7)
-      ..write(obj.videos);
+      ..write(obj.videos)
+      ..writeByte(8)
+      ..write(obj.userId);
   }
 
   @override

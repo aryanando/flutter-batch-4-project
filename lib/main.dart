@@ -23,10 +23,15 @@ void main() async {
   // ✅ REGISTER ADAPTERS
   Hive.registerAdapter(TroubleReportAdapter());
   Hive.registerAdapter(ReportMediaAdapter());
-
+  // await clearTroubleReportsBox();
   await setupInjector();
 
   runApp(const MyApp());
+}
+
+Future<void> clearTroubleReportsBox() async {
+  final box = await Hive.openBox('trouble_reports');
+  await box.clear();
 }
 
 class MyApp extends StatelessWidget {

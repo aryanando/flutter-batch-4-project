@@ -1,16 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_batch_4_project/blocs/product/product_cubit.dart';
-import 'package:flutter_batch_4_project/blocs/sales_invoice/sales_invoice_cubit.dart';
 import 'package:flutter_batch_4_project/blocs/trouble_report/trouble_report_cubit.dart';
-import 'package:flutter_batch_4_project/data/local_storage/trouble_report_local_storage.dart';
-import 'package:flutter_batch_4_project/data/remote_data/trouble_report_remote_data.dart';
-import 'package:flutter_batch_4_project/pages/home/invoice_tab.dart';
-import 'package:flutter_batch_4_project/pages/home/pos_tab.dart';
+import 'package:flutter_batch_4_project/helpers/injector.dart';
+import 'package:flutter_batch_4_project/pages/home/home_tab.dart';
+import 'package:flutter_batch_4_project/pages/home/all_reports_tab.dart';
 import 'package:flutter_batch_4_project/pages/home/profile_tab.dart';
-import 'package:flutter_batch_4_project/pages/home/report_order_tab.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-import '../../helpers/injector.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -22,12 +16,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   var currentIndex = 0;
 
-  final troubleReportCubit = getIt.get<TroubleReportCubit>();
-
-  @override
-  void initState() {
-    super.initState();
-  }
+  final troubleReportCubit = TroubleReportCubit(getIt.get(), getIt.get());
 
   @override
   Widget build(BuildContext context) {
@@ -37,8 +26,9 @@ class _HomePageState extends State<HomePage> {
       ],
       child: Scaffold(
         body: [
-          const TroubleReportTab(),
-          const TroubleReportTab(),
+          const HomeTab(), // My Reports (owned by user)
+          const AllReportsTab(), // All Reports for IT department
+          const ProfileTab(), // User Profile
         ][currentIndex],
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: currentIndex,
@@ -47,12 +37,16 @@ class _HomePageState extends State<HomePage> {
           }),
           items: const [
             BottomNavigationBarItem(
-              icon: Icon(Icons.report),
-              label: 'Reports', // New tab label
+              icon: Icon(Icons.home),
+              label: 'My Reports',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.report),
-              label: 'Reports', // New tab label
+              icon: Icon(Icons.list),
+              label: 'All Reports',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person),
+              label: 'Profile',
             ),
           ],
         ),

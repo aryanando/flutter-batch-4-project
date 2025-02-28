@@ -6,31 +6,33 @@ class AuthLocalStorage {
 
   AuthLocalStorage(this.box);
 
+  // Save token
   Future<void> setToken(String value) async {
     await box.put('token', value);
   }
 
+  // Get token
   String? getToken() {
     return box.get('token');
   }
 
+  // Save full User object (store as JSON map)
   Future<void> setUser(User value) async {
-    await box.put('name', value.name);
-    await box.put('email', value.email);
+    await box.put('user', value.toJson());
   }
 
+  // Get full User object
   User? getUser() {
-    final name = box.get('name');
-    final email = box.get('email');
-    if (name != null) {
-      return User(name: name, email: email);
+    final userJson = box.get('user');
+    if (userJson != null) {
+      return User.fromJson(Map<String, dynamic>.from(userJson));
     }
     return null;
   }
 
+  // Clear everything
   Future<void> clear() async {
     await box.delete('token');
-    await box.delete('name');
-    await box.delete('email');
+    await box.delete('user');
   }
 }
