@@ -11,7 +11,8 @@ class NetworkService {
 
   NetworkService(this.authStorage) {
     final baseOptions = BaseOptions(
-      baseUrl: 'https://nginfoin.my.id/public',
+      // baseUrl: 'https://api.batubhayangkara.com/api/v1', // For Production
+      baseUrl: 'http://10.20.30.6:8081', // For Local Dev
       connectTimeout: Duration(seconds: requestTimeOut),
       receiveTimeout: Duration(seconds: requestTimeOut),
       responseType: ResponseType.json,
@@ -37,10 +38,10 @@ class NetworkService {
   }) async {
     final header = await headersRequest();
     return await _safeFetch(() => dio.get(
-      url,
-      queryParameters: queryParameters ?? {},
-      options: Options(headers: header),
-    ));
+          url,
+          queryParameters: queryParameters ?? {},
+          options: Options(headers: header),
+        ));
   }
 
   Future<Response> post({
@@ -49,12 +50,10 @@ class NetworkService {
     Map<String, dynamic>? queryParameters,
   }) async {
     final header = await headersRequest();
-    return await _safeFetch(() => dio.post(
-      url,
-      data: data,
-      options: Options(headers: header),
-      queryParameters: queryParameters
-    ));
+    return await _safeFetch(() => dio.post(url,
+        data: data,
+        options: Options(headers: header),
+        queryParameters: queryParameters));
   }
 
   Future<Response> put({
@@ -64,11 +63,11 @@ class NetworkService {
   }) async {
     final header = await headersRequest();
     return await _safeFetch(() => dio.put(
-      url,
-      data: data,
-      options: Options(headers: header),
-      queryParameters: queryParameters,
-    ));
+          url,
+          data: data,
+          options: Options(headers: header),
+          queryParameters: queryParameters,
+        ));
   }
 
   Future<Response> patch({
@@ -78,11 +77,11 @@ class NetworkService {
   }) async {
     final header = await headersRequest();
     return await _safeFetch(() => dio.patch(
-      url,
-      data: data,
-      options: Options(headers: header),
-      queryParameters: queryParameters,
-    ));
+          url,
+          data: data,
+          options: Options(headers: header),
+          queryParameters: queryParameters,
+        ));
   }
 
   Future<Response> delete({
@@ -92,11 +91,11 @@ class NetworkService {
   }) async {
     final header = await headersRequest();
     return await _safeFetch(() => dio.delete(
-      url,
-      data: data,
-      queryParameters: parameters,
-      options: Options(headers: header),
-    ));
+          url,
+          data: data,
+          queryParameters: parameters,
+          options: Options(headers: header),
+        ));
   }
 
   Future<Response> _safeFetch(Future<Response> Function() tryFetch) async {

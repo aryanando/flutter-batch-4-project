@@ -8,32 +8,21 @@ abstract class AuthRemoteData {
 }
 
 class AuthRemoteDataImpl implements AuthRemoteData {
-
   late final NetworkService networkService;
 
-  AuthRemoteDataImpl(
-    this.networkService
-  );
+  AuthRemoteDataImpl(this.networkService);
 
   @override
   Future<User> getProfile() async {
-    final response = await networkService.get(
-      url: "/api/profile/me"
-    );
+    final response = await networkService.get(url: "/api/v1/me");
     return User.fromJson(response.data['data']);
   }
 
   @override
   Future<AuthResponseModel> postLogin(String email, String password) async {
     final response = await networkService.post(
-      url: "/api/auth/login",
-      data: {
-        "email": "admin@gmail.com",
-        "password": "123456"
-      }
-    );
+        url: "/api/v1/login", data: {"email": email, "password": password});
 
-    return AuthResponseModel.fromJson(response.data['data']);
+    return AuthResponseModel.fromJson(response.data);
   }
-
 }

@@ -8,11 +8,22 @@ import 'package:flutter_batch_4_project/data/remote_data/auth_remote_data.dart';
 import 'package:flutter_batch_4_project/helpers/injector.dart';
 import 'package:flutter_batch_4_project/helpers/themes/dark_theme.dart';
 import 'package:flutter_batch_4_project/helpers/themes/light_theme.dart';
+import 'package:flutter_batch_4_project/models/trouble_report_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hive/hive.dart';
+import 'package:path_provider/path_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
+  // Ensure Hive is initialized (already in your injector).
+  final appDocDir = await getApplicationDocumentsDirectory();
+  Hive.init(appDocDir.path);
+
+  // ✅ REGISTER ADAPTERS
+  Hive.registerAdapter(TroubleReportAdapter());
+  Hive.registerAdapter(ReportMediaAdapter());
+
   await setupInjector();
 
   runApp(const MyApp());
@@ -25,32 +36,27 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (context) => AuthCubit(
-          getIt.get<AuthLocalStorage>(),
-          getIt.get<AuthRemoteData>(),
-        )),
-        BlocProvider(create: (context) => OrderCubit(
-          getIt.get()
-        )),
         BlocProvider(
-          create: (context) => ThemeCubit(
-            getIt.get()
-          )..init(),
+            create: (context) => AuthCubit(
+                  getIt.get<AuthLocalStorage>(),
+                  getIt.get<AuthRemoteData>(),
+                )),
+        BlocProvider(create: (context) => OrderCubit(getIt.get())),
+        BlocProvider(
+          create: (context) => ThemeCubit(getIt.get())..init(),
         ),
       ],
-      child: BlocBuilder<ThemeCubit, ThemeMode>(
-        builder: (context, themeMode) {
-          return MaterialApp(
-            title: 'Nusacodes Batch 2',
-            debugShowCheckedModeBanner: false,
-            themeMode: themeMode,
-            theme: lightTheme(context),
-            darkTheme: darkTheme(context),
-            initialRoute: AppRoutes.splash,
-            routes: routes,
-          );
-        }
-      ),
+      child: BlocBuilder<ThemeCubit, ThemeMode>(builder: (context, themeMode) {
+        return MaterialApp(
+          title: 'Nusacodes Batch 2',
+          debugShowCheckedModeBanner: false,
+          themeMode: themeMode,
+          theme: lightTheme(context),
+          darkTheme: darkTheme(context),
+          initialRoute: AppRoutes.splash,
+          routes: routes,
+        );
+      }),
     );
   }
 }

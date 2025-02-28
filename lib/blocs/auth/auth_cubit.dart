@@ -4,7 +4,6 @@ import 'package:flutter_batch_4_project/data/remote_data/auth_remote_data.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AuthCubit extends Cubit<AuthState> {
-
   late final AuthLocalStorage authLocalStorage;
   late final AuthRemoteData authRemoteData;
 
@@ -17,10 +16,7 @@ class AuthCubit extends Cubit<AuthState> {
     required String email,
     required String password,
   }) async {
-    emit(state.copyWith(
-      loading: true,
-      errorMessage: ''
-    ));
+    emit(state.copyWith(loading: true, errorMessage: ''));
 
     try {
       final response = await authRemoteData.postLogin(email, password);
@@ -28,29 +24,19 @@ class AuthCubit extends Cubit<AuthState> {
       await authLocalStorage.setUser(response.user!);
 
       emit(state.copyWith(
-        loading: false,
-        user: response.user!,
-        isLoggedIn: true
-      ));
+          loading: false, user: response.user!, isLoggedIn: true));
     } catch (e) {
-      emit(state.copyWith(
-        loading: false,
-        errorMessage: "$e"
-      ));
+      emit(state.copyWith(loading: false, errorMessage: "$e"));
     }
-
   }
 
   bool isLoggedIn() {
     final token = authLocalStorage.getToken();
-    if(token?.isEmpty ?? true) {
+    if (token?.isEmpty ?? true) {
       return false;
     } else {
       final user = authLocalStorage.getUser();
-      emit(state.copyWith(
-        user: user,
-        isLoggedIn: true
-      ));
+      emit(state.copyWith(user: user, isLoggedIn: true));
       return true;
     }
   }
@@ -70,5 +56,4 @@ class AuthCubit extends Cubit<AuthState> {
   Future<void> logout() async {
     await authLocalStorage.clear();
   }
-
 }

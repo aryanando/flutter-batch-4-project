@@ -16,15 +16,15 @@ class AuthResponseModel {
   factory AuthResponseModel.fromJson(Map<String, dynamic> json) =>
       AuthResponseModel(
         user: json["user"] == null ? null : User.fromJson(json["user"]),
-        accessToken: json["access_token"],
-        tokenType: json["token_type"],
-        expiresIn: json["expires_in"],
+        accessToken: json["token"]["token"],
+        // tokenType: json["token_type"],
+        // expiresIn: json["expires_in"],
       );
 
   Map<String, dynamic> toJson() => {
         "user": user?.toJson(),
         "access_token": accessToken,
-        "token_type": tokenType,
-        "expires_in": expiresIn,
+        // "token_type": tokenType,
+        // "expires_in": expiresIn,
       };
 }

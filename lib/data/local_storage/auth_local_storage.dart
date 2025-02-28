@@ -2,7 +2,6 @@ import 'package:flutter_batch_4_project/models/user_model.dart';
 import 'package:hive/hive.dart';
 
 class AuthLocalStorage {
-
   late final Box box;
 
   AuthLocalStorage(this.box);
@@ -23,7 +22,7 @@ class AuthLocalStorage {
   User? getUser() {
     final name = box.get('name');
     final email = box.get('email');
-    if(name != null) {
+    if (name != null) {
       return User(name: name, email: email);
     }
     return null;
@@ -34,5 +33,4 @@ class AuthLocalStorage {
     await box.delete('name');
     await box.delete('email');
   }
-
 }
