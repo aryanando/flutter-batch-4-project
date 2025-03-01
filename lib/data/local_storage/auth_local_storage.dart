@@ -24,6 +24,7 @@ class AuthLocalStorage {
   // Get full User object
   User? getUser() {
     final userJson = box.get('user');
+    print('🟢 Retrieved User Data: $userJson');
     if (userJson != null) {
       return User.fromJson(Map<String, dynamic>.from(userJson));
     }

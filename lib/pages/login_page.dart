@@ -23,6 +23,13 @@ class _LoginPageState extends State<LoginPage> {
   void initState() {
     authCubit = context.read<AuthCubit>();
     super.initState();
+
+    // 🔥 Immediately check if already logged in and redirect to home
+    if (authCubit.isLoggedIn()) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.pushReplacementNamed(context, AppRoutes.home);
+      });
+    }
   }
 
   @override
@@ -37,25 +44,22 @@ class _LoginPageState extends State<LoginPage> {
     return MultiBlocListener(
       listeners: [
         BlocListener<AuthCubit, AuthState>(
-          listenWhen: (p, c) => (
-            (p.errorMessage == '' && c.errorMessage != '') ||
-            (p.isLoggedIn == false && c.isLoggedIn == true)
-          ),
+          listenWhen: (p, c) =>
+              ((p.errorMessage == '' && c.errorMessage != '') ||
+                  (p.isLoggedIn == false && c.isLoggedIn == true)),
           listener: (context, state) {
             if (state.errorMessage != '') {
               showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Gagal Login'),
-                  content: Text(state.errorMessage),
-                  actions: [
-                    FilledButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('OK')
-                    )
-                  ],
-                )
-              );
+                  context: context,
+                  builder: (context) => AlertDialog(
+                        title: const Text('Gagal Login'),
+                        content: Text(state.errorMessage),
+                        actions: [
+                          FilledButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('OK'))
+                        ],
+                      ));
             } else if (state.isLoggedIn) {
               Navigator.pushReplacementNamed(context, AppRoutes.home);
             }
@@ -72,9 +76,10 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   Text(
                     "Login",
-                    style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                      fontWeight: FontWeight.bold
-                    ),
+                    style: Theme.of(context)
+                        .textTheme
+                        .headlineLarge
+                        ?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   Text(
                     "Selamat Datang Kembali!",
@@ -82,7 +87,9 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ],
               ),
-              SizedBox(height: 32,),
+              SizedBox(
+                height: 32,
+              ),
               TextFormField(
                 controller: emailController,
                 keyboardType: TextInputType.emailAddress,
@@ -90,20 +97,23 @@ class _LoginPageState extends State<LoginPage> {
                   hintText: "Email",
                 ),
               ),
-              SizedBox(height: 16,),
+              SizedBox(
+                height: 16,
+              ),
               TextFormField(
                 controller: passwordController,
                 keyboardType: TextInputType.text,
                 obscureText: showPassword,
                 decoration: InputDecoration(
-                  hintText: "Password",
-                  suffixIcon: IconButton(
-                    onPressed: () => setState(() => showPassword = !showPassword), 
-                    icon: Icon(Icons.visibility)
-                  )
-                ),
+                    hintText: "Password",
+                    suffixIcon: IconButton(
+                        onPressed: () =>
+                            setState(() => showPassword = !showPassword),
+                        icon: Icon(Icons.visibility))),
               ),
-              SizedBox(height: 16,),
+              SizedBox(
+                height: 16,
+              ),
               BlocBuilder<AuthCubit, AuthState>(builder: (context, state) {
                 return SizedBox(
                   width: double.infinity,
@@ -113,12 +123,12 @@ class _LoginPageState extends State<LoginPage> {
                         password: passwordController.text),
                     child: state.loading
                         ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            backgroundColor: Colors.white,
-                          ),
-                        )
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              backgroundColor: Colors.white,
+                            ),
+                          )
                         : const Text("Login"),
                   ),
                 );

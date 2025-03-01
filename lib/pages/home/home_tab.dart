@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_batch_4_project/data/local_storage/auth_local_storage.dart';
 import 'package:flutter_batch_4_project/helpers/injector.dart';
+import 'package:flutter_batch_4_project/pages/home/create_report_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_batch_4_project/blocs/trouble_report/trouble_report_cubit.dart';
 import 'package:flutter_batch_4_project/blocs/trouble_report/trouble_report_state.dart';
@@ -25,7 +26,27 @@ class _HomeTabState extends State<HomeTab> {
     final currentUserId = getIt.get<AuthLocalStorage>().getUser()?.id;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('My Reports')),
+      appBar: AppBar(
+        title: const Text('My Reports'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const CreateReportPage()),
+              );
+
+              if (result == true) {
+                context
+                    .read<TroubleReportCubit>()
+                    .loadReports(); // Refresh after creating
+              }
+            },
+          ),
+        ],
+      ),
       body: BlocBuilder<TroubleReportCubit, TroubleReportState>(
         builder: (context, state) {
           if (state is TroubleReportLoading) {

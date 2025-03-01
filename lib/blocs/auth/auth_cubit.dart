@@ -55,5 +55,6 @@ class AuthCubit extends Cubit<AuthState> {
 
   Future<void> logout() async {
     await authLocalStorage.clear();
+    emit(const AuthState()); // 🔥 Reset state after logout
   }
 }

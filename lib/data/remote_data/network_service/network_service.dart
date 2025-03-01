@@ -119,4 +119,13 @@ class NetworkService {
       throw NetworkException(message: e.toString());
     }
   }
+
+  Future<Response> postFormData(String endpoint, FormData formData) async {
+    final header = await headersRequest();
+    return dio.post(
+      endpoint,
+      data: formData,
+      options: Options(headers: header),
+    );
+  }
 }
