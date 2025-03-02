@@ -103,13 +103,17 @@ class _LoginPageState extends State<LoginPage> {
               TextFormField(
                 controller: passwordController,
                 keyboardType: TextInputType.text,
-                obscureText: showPassword,
+                obscureText: !showPassword,
                 decoration: InputDecoration(
-                    hintText: "Password",
-                    suffixIcon: IconButton(
-                        onPressed: () =>
-                            setState(() => showPassword = !showPassword),
-                        icon: Icon(Icons.visibility))),
+                  hintText: "Password",
+                  suffixIcon: IconButton(
+                    onPressed: () =>
+                        setState(() => showPassword = !showPassword),
+                    icon: Icon(
+                      showPassword ? Icons.visibility_off : Icons.visibility,
+                    ),
+                  ),
+                ),
               ),
               SizedBox(
                 height: 16,
