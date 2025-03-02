@@ -34,8 +34,7 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
 
       final controller = VideoPlayerController.networkUrl(Uri.parse(videoUrl));
 
-      _videoControllers
-          .add(controller); // 🔥 Fixed - use add() not _videoControllers[i]
+      _videoControllers.add(controller);
 
       controller.initialize().then((_) {
         if (mounted) {
@@ -68,102 +67,161 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(widget.report.name)),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Description:',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              Text(widget.report.description),
-              const SizedBox(height: 10),
-              Text('Status:', style: TextStyle(fontWeight: FontWeight.bold)),
-              Text(widget.report.status),
-              const SizedBox(height: 10),
-              if (widget.report.result != null) ...[
-                Text('Result:', style: TextStyle(fontWeight: FontWeight.bold)),
-                Text(widget.report.result!),
-              ],
-              const SizedBox(height: 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildInfoCard(
+                Icons.description, "Deskripsi", widget.report.description),
+            const SizedBox(height: 12),
+            _buildInfoCard(Icons.info, "Status", widget.report.status,
+                statusColor: widget.report.status == 'solved'
+                    ? Colors.green
+                    : Colors.orange),
+            const SizedBox(height: 12),
+            if (widget.report.result != null)
+              _buildInfoCard(
+                  Icons.check_circle, "Hasil", widget.report.result!),
+            const SizedBox(height: 12),
 
-              // Photos Section
-              Text('Photos:', style: TextStyle(fontWeight: FontWeight.bold)),
-              if (widget.report.photos.isNotEmpty)
-                Column(
-                  children: widget.report.photos.map((photo) {
-                    return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 5.0),
-                        child: Image.network(
-                          photo.filePath.startsWith('http')
-                              ? photo.filePath
-                              : 'http://10.20.30.6:8081/storage/${photo.filePath}',
-                          height: 150,
-                          fit: BoxFit.cover,
-                        ));
-                  }).toList(),
-                )
-              else
-                Text('No photos available'),
+            // Photos Section
+            _buildSectionHeader(Icons.photo, "Photos"),
+            if (widget.report.photos.isNotEmpty)
+              Column(
+                children: widget.report.photos.map((photo) {
+                  final photoUrl = photo.filePath.startsWith('http')
+                      ? photo.filePath
+                      : 'http://10.20.30.6:8081/storage/${photo.filePath}';
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(photoUrl,
+                          height: 150, fit: BoxFit.cover),
+                    ),
+                  );
+                }).toList(),
+              )
+            else
+              const Text('Tidak ada foto.',
+                  style: TextStyle(fontStyle: FontStyle.italic)),
 
-              const SizedBox(height: 10),
+            const SizedBox(height: 12),
 
-              // Videos Section
-              Text('Videos:', style: TextStyle(fontWeight: FontWeight.bold)),
-              if (widget.report.videos.isNotEmpty &&
-                  _videoControllers.length == widget.report.videos.length)
-                Column(
-                  children: List.generate(_videoControllers.length, (index) {
-                    final controller = _videoControllers[index];
+            // Videos Section
+            _buildSectionHeader(Icons.videocam, "Videos"),
+            if (widget.report.videos.isNotEmpty &&
+                _videoControllers.length == widget.report.videos.length)
+              Column(
+                children: List.generate(_videoControllers.length, (index) {
+                  final controller = _videoControllers[index];
 
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 5.0),
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: Card(
+                      elevation: 1,
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _hasError[index]
-                              ? Text('Error loading video')
-                              : (_isInitialized[index] &&
-                                      controller.value.isInitialized)
-                                  ? AspectRatio(
-                                      aspectRatio: controller.value.aspectRatio,
-                                      child: VideoPlayer(controller),
-                                    )
-                                  : const CircularProgressIndicator(),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              IconButton(
-                                icon: Icon(controller.value.isPlaying
-                                    ? Icons.pause
-                                    : Icons.play_arrow),
-                                onPressed: () {
-                                  setState(() {
-                                    controller.value.isPlaying
-                                        ? controller.pause()
-                                        : controller.play();
-                                  });
-                                },
-                              ),
-                              IconButton(
-                                icon: Icon(Icons.replay),
-                                onPressed: () {
-                                  controller.seekTo(Duration.zero);
-                                  controller.play();
-                                },
-                              ),
-                            ],
-                          ),
+                          if (_hasError[index])
+                            Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Text('Gagal memuat video.',
+                                  style: TextStyle(color: Colors.red)),
+                            )
+                          else if (_isInitialized[index] &&
+                              controller.value.isInitialized)
+                            AspectRatio(
+                              aspectRatio: controller.value.aspectRatio,
+                              child: VideoPlayer(controller),
+                            )
+                          else
+                            const Padding(
+                              padding: EdgeInsets.all(12),
+                              child: Center(child: CircularProgressIndicator()),
+                            ),
+                          if (_isInitialized[index])
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                IconButton(
+                                  icon: Icon(controller.value.isPlaying
+                                      ? Icons.pause
+                                      : Icons.play_arrow),
+                                  onPressed: () {
+                                    setState(() {
+                                      controller.value.isPlaying
+                                          ? controller.pause()
+                                          : controller.play();
+                                    });
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.replay),
+                                  onPressed: () {
+                                    controller.seekTo(Duration.zero);
+                                    controller.play();
+                                  },
+                                ),
+                              ],
+                            ),
                         ],
                       ),
-                    );
-                  }),
-                )
-              else
-                Text('No videos available'),
-            ],
-          ),
+                    ),
+                  );
+                }),
+              )
+            else
+              const Text('Tidak ada video.',
+                  style: TextStyle(fontStyle: FontStyle.italic)),
+          ],
         ),
       ),
+    );
+  }
+
+  Widget _buildInfoCard(IconData icon, String title, String content,
+      {Color? statusColor}) {
+    return Card(
+      elevation: 1,
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, size: 28, color: statusColor ?? Colors.blueAccent),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 14)),
+                  const SizedBox(height: 4),
+                  Text(content,
+                      style: TextStyle(
+                          fontSize: 14, color: statusColor ?? Colors.black87)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(IconData icon, String title) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Icon(icon, size: 22, color: Colors.blueAccent),
+        const SizedBox(width: 8),
+        Text(title,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+      ],
     );
   }
 }
