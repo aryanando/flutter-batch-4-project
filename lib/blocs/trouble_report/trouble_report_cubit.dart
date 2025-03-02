@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_batch_4_project/data/remote_data/trouble_report_remote_data.dart';
 import 'package:flutter_batch_4_project/data/local_storage/trouble_report_local_storage.dart';
-import 'package:flutter_batch_4_project/models/trouble_report_model.dart';
+// import 'package:flutter_batch_4_project/models/trouble_report_model.dart';
 
 import 'trouble_report_state.dart';
 

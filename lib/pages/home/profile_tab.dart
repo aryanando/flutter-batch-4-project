@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_batch_4_project/blocs/auth/auth_cubit.dart';
 import 'package:flutter_batch_4_project/blocs/auth/auth_state.dart';
+import 'package:flutter_batch_4_project/blocs/auth/profile_cubit.dart';
 import 'package:flutter_batch_4_project/blocs/theme/theme_cubit.dart';
 import 'package:flutter_batch_4_project/consts/routes.dart';
+import 'package:flutter_batch_4_project/helpers/injector.dart';
+import 'package:flutter_batch_4_project/pages/home/edit_profile_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ProfileTab extends StatefulWidget {
@@ -28,7 +31,6 @@ class _ProfileTabState extends State<ProfileTab> {
               BlocBuilder<AuthCubit, AuthState>(
                 builder: (context, state) {
                   final user = state.user;
-                  print('Your Photo Is : ${user?.photo}');
                   final String avatarUrl = (user?.photo != null &&
                           user!.photo!.isNotEmpty)
                       ? (user.photo!.startsWith('http')
@@ -48,23 +50,52 @@ class _ProfileTabState extends State<ProfileTab> {
                                 const Icon(Icons.person),
                           ),
                           const SizedBox(width: 16),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                user?.name ?? '',
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  user?.name ?? '',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                user?.email ?? '',
-                                style: const TextStyle(
-                                  fontSize: 16,
+                                Text(
+                                  user?.email ?? '',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () async {
+                              final result = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => BlocProvider(
+                                    create: (context) => ProfileCubit(
+                                      getIt.get(),
+                                      getIt.get(),
+                                    ),
+                                    child: const EditProfilePage(),
+                                  ),
+                                ),
+                              );
+
+                              if (result == true) {
+                                context
+                                    .read<AuthCubit>()
+                                    .refreshProfile(); // Refresh profile after editing
+                              }
+                            },
+                            icon: const Icon(
+                              Icons.edit,
+                            ),
+                            tooltip:
+                                'Edit Profile', // Optional for better accessibility
                           ),
                         ],
                       ),

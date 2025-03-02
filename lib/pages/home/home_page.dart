@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_batch_4_project/blocs/auth/profile_cubit.dart';
 import 'package:flutter_batch_4_project/blocs/trouble_report/trouble_report_cubit.dart';
 import 'package:flutter_batch_4_project/helpers/injector.dart';
 import 'package:flutter_batch_4_project/pages/home/home_tab.dart';
@@ -23,6 +24,9 @@ class _HomePageState extends State<HomePage> {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => troubleReportCubit),
+        BlocProvider(
+          create: (context) => getIt<ProfileCubit>(),
+        ),
       ],
       child: Scaffold(
         body: [

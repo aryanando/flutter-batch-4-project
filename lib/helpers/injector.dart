@@ -1,3 +1,4 @@
+import 'package:flutter_batch_4_project/blocs/auth/profile_cubit.dart';
 import 'package:flutter_batch_4_project/blocs/trouble_report/trouble_report_cubit.dart';
 import 'package:flutter_batch_4_project/data/local_storage/auth_local_storage.dart';
 import 'package:flutter_batch_4_project/data/local_storage/theme_local_storage.dart';
@@ -44,4 +45,8 @@ void networkInjector() {
   getIt.registerFactory(() => TroubleReportCubit(
       getIt.get<TroubleReportRemoteData>(),
       getIt.get<TroubleReportLocalStorage>()));
+
+  getIt.registerSingleton<ProfileCubit>(
+    ProfileCubit(getIt.get<AuthLocalStorage>(), getIt.get<AuthRemoteData>()),
+  );
 }
