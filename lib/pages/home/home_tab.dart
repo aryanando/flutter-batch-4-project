@@ -14,11 +14,14 @@ class HomeTab extends StatefulWidget {
   State<HomeTab> createState() => _HomeTabState();
 }
 
-class _HomeTabState extends State<HomeTab> {
+class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
   @override
   void initState() {
     super.initState();
     context.read<TroubleReportCubit>().loadReports();
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   Future<void> _refreshReports() async {
@@ -48,6 +51,14 @@ class _HomeTabState extends State<HomeTab> {
             },
           ),
         ],
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: 'Pending'),
+            Tab(text: 'On Progress'),
+            Tab(text: 'Solved'),
+          ],
+        ),
       ),
       body: BlocBuilder<TroubleReportCubit, TroubleReportState>(
         builder: (context, state) {
@@ -58,70 +69,22 @@ class _HomeTabState extends State<HomeTab> {
                 .where((report) => report.userId == currentUserId)
                 .toList();
 
-            if (myReports.isEmpty) {
-              return const Center(child: Text('Tidak ada laporan.'));
-            }
+            final pendingReports = myReports
+                .where((report) => report.status == 'pending')
+                .toList();
+            final progressReports = myReports
+                .where((report) => report.status == 'on_progress')
+                .toList();
+            final solvedReports =
+                myReports.where((report) => report.status == 'solved').toList();
 
-            return RefreshIndicator(
-              onRefresh: _refreshReports,
-              child: ListView.builder(
-                padding: const EdgeInsets.all(8),
-                itemCount: myReports.length,
-                itemBuilder: (context, index) {
-                  final report = myReports[index];
-
-                  return Card(
-                    elevation: 2,
-                    margin: const EdgeInsets.symmetric(vertical: 6),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.all(12),
-                      leading: CircleAvatar(
-                        backgroundColor: Colors.blueAccent,
-                        child: Text(
-                          (index + 1).toString(),
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                      ),
-                      title: Text(
-                        report.name,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            report.description,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Status: ${report.status}',
-                            style: TextStyle(
-                              color: report.status == 'solved'
-                                  ? Colors.green
-                                  : Colors.orange,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                ReportDetailPage(report: report),
-                          ),
-                        );
-                      },
-                    ),
-                  );
-                },
-              ),
+            return TabBarView(
+              controller: _tabController,
+              children: [
+                _buildReportList(pendingReports),
+                _buildReportList(progressReports),
+                _buildReportList(solvedReports),
+              ],
             );
           } else if (state is TroubleReportError) {
             return Center(
@@ -148,6 +111,72 @@ class _HomeTabState extends State<HomeTab> {
             );
           }
           return const Center(child: Text('Tidak ada laporan.'));
+        },
+      ),
+    );
+  }
+
+  Widget _buildReportList(List reports) {
+    if (reports.isEmpty) {
+      return const Center(child: Text('No reports available.'));
+    }
+
+    return RefreshIndicator(
+      onRefresh: _refreshReports,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(8),
+        itemCount: reports.length,
+        itemBuilder: (context, index) {
+          final report = reports[index];
+          return Card(
+            elevation: 2,
+            margin: const EdgeInsets.symmetric(vertical: 6),
+            child: ListTile(
+              contentPadding: const EdgeInsets.all(12),
+              leading: CircleAvatar(
+                backgroundColor: Colors.blueAccent,
+                child: Text(
+                  (index + 1).toString(),
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ),
+              title: Text(
+                report.name,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    report.description,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Status: ${report.status}',
+                    style: TextStyle(
+                      color: report.status == 'solved'
+                          ? Colors.green
+                          : Colors.orange,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ReportDetailPage(report: report),
+                  ),
+                );
+              },
+            ),
+          );
         },
       ),
     );
