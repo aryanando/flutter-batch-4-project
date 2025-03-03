@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_batch_4_project/blocs/auth/auth_cubit.dart';
 import 'package:flutter_batch_4_project/blocs/order/order_cubit.dart';
 import 'package:flutter_batch_4_project/blocs/theme/theme_cubit.dart';
+import 'package:flutter_batch_4_project/blocs/trouble_report/trouble_report_cubit.dart';
 import 'package:flutter_batch_4_project/consts/routes.dart';
 import 'package:flutter_batch_4_project/data/local_storage/auth_local_storage.dart';
+import 'package:flutter_batch_4_project/data/local_storage/trouble_report_local_storage.dart';
 import 'package:flutter_batch_4_project/data/remote_data/auth_remote_data.dart';
+import 'package:flutter_batch_4_project/data/remote_data/trouble_report_remote_data.dart';
 import 'package:flutter_batch_4_project/helpers/injector.dart';
 import 'package:flutter_batch_4_project/helpers/themes/dark_theme.dart';
 import 'package:flutter_batch_4_project/helpers/themes/light_theme.dart';
@@ -49,6 +52,12 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (context) => OrderCubit(getIt.get())),
         BlocProvider(
           create: (context) => ThemeCubit(getIt.get())..init(),
+        ),
+        BlocProvider(
+          create: (context) => TroubleReportCubit(
+            getIt.get<TroubleReportRemoteData>(),
+            getIt.get<TroubleReportLocalStorage>(),
+          )..loadReports(),
         ),
       ],
       child: BlocBuilder<ThemeCubit, ThemeMode>(builder: (context, themeMode) {

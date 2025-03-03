@@ -8,52 +8,63 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:video_player/video_player.dart';
 
 class ReportDetailPage extends StatefulWidget {
-  final TroubleReport report;
+  final String reportId;
 
-  const ReportDetailPage({super.key, required this.report});
+  const ReportDetailPage({super.key, required this.reportId});
 
   @override
   State<ReportDetailPage> createState() => _ReportDetailPageState();
 }
 
 class _ReportDetailPageState extends State<ReportDetailPage> {
+  TroubleReport? report;
   final List<VideoPlayerController> _videoControllers = [];
   late List<bool> _isInitialized;
   late List<bool> _hasError;
-  late TroubleReport report;
 
   @override
   void initState() {
     super.initState();
-    report = widget.report;
+    _fetchReportDetails();
+  }
 
-    print('🟢 Total Videos: ${widget.report.videos.length}');
+  Future<void> _fetchReportDetails() async {
+    final refreshedReport = await context
+        .read<TroubleReportCubit>()
+        .fetchSingleReport(widget.reportId);
 
-    _isInitialized = List.filled(widget.report.videos.length, false);
-    _hasError = List.filled(widget.report.videos.length, false);
+    if (refreshedReport != null) {
+      setState(() {
+        report = refreshedReport;
 
-    for (var i = 0; i < widget.report.videos.length; i++) {
-      final videoUrl = widget.report.videos[i].filePath.startsWith('http')
-          ? widget.report.videos[i].filePath
-          : 'http://10.20.30.6:8081/api/v1/it-trouble-reports/videos/${widget.report.videos[i].filePath.split('/').last}';
+        // Initialize videos
+        _videoControllers.clear();
+        _isInitialized = List.filled(report!.videos.length, false);
+        _hasError = List.filled(report!.videos.length, false);
 
-      print('🟢 Loading video: $videoUrl');
+        for (var i = 0; i < report!.videos.length; i++) {
+          final videoUrl = report!.videos[i].filePath.startsWith('http')
+              ? report!.videos[i].filePath
+              : 'http://10.20.30.6:8081/api/v1/it-trouble-reports/videos/${report!.videos[i].filePath.split('/').last}';
 
-      final controller = VideoPlayerController.networkUrl(Uri.parse(videoUrl));
+          final controller =
+              VideoPlayerController.networkUrl(Uri.parse(videoUrl));
 
-      _videoControllers.add(controller);
+          _videoControllers.add(controller);
 
-      controller.initialize().then((_) {
-        if (mounted) {
-          setState(() {
-            _isInitialized[i] = true;
-          });
-        }
-      }).catchError((error) {
-        print('🔴 Video Error: $error');
-        if (mounted) {
-          setState(() {
-            _hasError[i] = true;
+          controller.initialize().then((_) {
+            if (mounted) {
+              setState(() {
+                _isInitialized[i] = true;
+              });
+            }
+          }).catchError((error) {
+            print('🔴 Video Error: $error');
+            if (mounted) {
+              setState(() {
+                _hasError[i] = true;
+              });
+            }
           });
         }
       });
@@ -63,9 +74,7 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
   @override
   void dispose() {
     for (var controller in _videoControllers) {
-      if (controller.value.isInitialized) {
-        controller.dispose();
-      }
+      controller.dispose();
     }
     super.dispose();
   }
@@ -75,28 +84,34 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
     final currentUser = getIt.get<AuthLocalStorage>().getUser();
     final isTechnician = currentUser?.unitId == 20;
 
+    if (report == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Report Details')),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
-      appBar: AppBar(title: Text(widget.report.name)),
+      appBar: AppBar(title: Text(report!.name)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildInfoCard(Icons.description, "Deskripsi", report.description),
+            _buildInfoCard(
+                Icons.description, "Description", report!.description),
             const SizedBox(height: 12),
-            _buildInfoCard(Icons.info, "Status", report.status,
+            _buildInfoCard(Icons.info, "Status", report!.status,
                 statusColor:
-                    report.status == 'solved' ? Colors.green : Colors.orange),
+                    report!.status == 'solved' ? Colors.green : Colors.orange),
             const SizedBox(height: 12),
-            if (report.result != null)
-              _buildInfoCard(Icons.check_circle, "Hasil", report.result!),
+            if (report!.result != null)
+              _buildInfoCard(Icons.check_circle, "Result", report!.result!),
             const SizedBox(height: 12),
-
-            // Photos Section
             _buildSectionHeader(Icons.photo, "Photos"),
-            if (report.photos.isNotEmpty)
+            if (report!.photos.isNotEmpty)
               Column(
-                children: report.photos.map((photo) {
+                children: report!.photos.map((photo) {
                   final photoUrl = photo.filePath.startsWith('http')
                       ? photo.filePath
                       : 'http://10.20.30.6:8081/storage/${photo.filePath}';
@@ -111,15 +126,12 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
                 }).toList(),
               )
             else
-              const Text('Tidak ada foto.',
+              const Text('No photos available.',
                   style: TextStyle(fontStyle: FontStyle.italic)),
-
             const SizedBox(height: 12),
-
-            // Videos Section
             _buildSectionHeader(Icons.videocam, "Videos"),
-            if (report.videos.isNotEmpty &&
-                _videoControllers.length == report.videos.length)
+            if (report!.videos.isNotEmpty &&
+                _videoControllers.length == report!.videos.length)
               Column(
                 children: List.generate(_videoControllers.length, (index) {
                   final controller = _videoControllers[index];
@@ -132,9 +144,9 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           if (_hasError[index])
-                            Padding(
-                              padding: const EdgeInsets.all(12),
-                              child: Text('Gagal memuat video.',
+                            const Padding(
+                              padding: EdgeInsets.all(12),
+                              child: Text('Failed to load video',
                                   style: TextStyle(color: Colors.red)),
                             )
                           else if (_isInitialized[index] &&
@@ -180,10 +192,8 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
                 }),
               )
             else
-              const Text('Tidak ada video.',
+              const Text('No videos available.',
                   style: TextStyle(fontStyle: FontStyle.italic)),
-            const SizedBox(height: 16),
-
             if (isTechnician)
               ElevatedButton.icon(
                 icon: const Icon(Icons.build),
@@ -192,14 +202,12 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
                   final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => UpdateReportPage(
-                          report: report), // Use local `report`
+                      builder: (context) => UpdateReportPage(report: report!),
                     ),
                   );
 
                   if (result == true) {
-                    print('here');
-                    await _reloadReport(); // 🔥 Call it here to refresh the details
+                    await _fetchReportDetails(); // Reload the report after successful update
                   }
                 },
               ),
@@ -251,18 +259,5 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
       ],
     );
-  }
-
-  Future<void> _reloadReport() async {
-    final refreshedReport = await context
-        .read<TroubleReportCubit>()
-        .fetchSingleReport(widget.report.id.toString());
-
-    if (refreshedReport != null) {
-      print("here 2");
-      setState(() {
-        report = refreshedReport;
-      });
-    }
   }
 }

@@ -166,7 +166,8 @@ class _AllReportsTabState extends State<AllReportsTab>
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ReportDetailPage(report: report),
+                    builder: (context) =>
+                        ReportDetailPage(reportId: report.id.toString()),
                   ),
                 );
               },

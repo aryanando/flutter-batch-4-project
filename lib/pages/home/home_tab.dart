@@ -171,7 +171,8 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ReportDetailPage(report: report),
+                    builder: (context) =>
+                        ReportDetailPage(reportId: report.id.toString()),
                   ),
                 );
               },
