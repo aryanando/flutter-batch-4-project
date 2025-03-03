@@ -1,3 +1,4 @@
+import 'package:flutter_batch_4_project/models/trouble_report_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_batch_4_project/data/remote_data/trouble_report_remote_data.dart';
 import 'package:flutter_batch_4_project/data/local_storage/trouble_report_local_storage.dart';
@@ -29,5 +30,9 @@ class TroubleReportCubit extends Cubit<TroubleReportState> {
         emit(TroubleReportError('Failed to fetch reports: $e'));
       }
     }
+  }
+
+  Future<TroubleReport?> fetchSingleReport(String reportId) async {
+    return await remoteData.fetchSingleReport(reportId);
   }
 }

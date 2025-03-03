@@ -3,6 +3,8 @@ import 'package:flutter_batch_4_project/pages/home/report_detail_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_batch_4_project/blocs/trouble_report/trouble_report_cubit.dart';
 import 'package:flutter_batch_4_project/blocs/trouble_report/trouble_report_state.dart';
+import 'package:flutter_batch_4_project/data/local_storage/auth_local_storage.dart';
+import 'package:flutter_batch_4_project/helpers/injector.dart';
 
 class AllReportsTab extends StatefulWidget {
   const AllReportsTab({super.key});
@@ -14,12 +16,16 @@ class AllReportsTab extends StatefulWidget {
 class _AllReportsTabState extends State<AllReportsTab>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  late bool isTechnician;
 
   @override
   void initState() {
     super.initState();
     context.read<TroubleReportCubit>().loadReports();
     _tabController = TabController(length: 3, vsync: this);
+
+    final currentUser = getIt.get<AuthLocalStorage>().getUser();
+    isTechnician = currentUser?.unitId == 20;
   }
 
   Future<void> _refreshReports() async {
@@ -49,7 +55,6 @@ class _AllReportsTabState extends State<AllReportsTab>
               return const Center(child: Text('Tidak ada laporan.'));
             }
 
-            // Filter reports based on status
             final pendingReports = state.reports
                 .where((report) => report.status == 'pending')
                 .toList();
@@ -152,6 +157,11 @@ class _AllReportsTabState extends State<AllReportsTab>
                   ),
                 ],
               ),
+              trailing: isTechnician
+                  ? const Icon(
+                      Icons.build,
+                    )
+                  : null,
               onTap: () {
                 Navigator.push(
                   context,

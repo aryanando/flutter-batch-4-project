@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:dio/dio.dart';
 import 'package:flutter_batch_4_project/data/remote_data/network_service/network_service.dart';
 import 'package:flutter_batch_4_project/models/trouble_report_model.dart';
@@ -41,5 +40,34 @@ class TroubleReportRemoteData {
     });
 
     await networkService.postFormData('/api/v1/it-trouble-reports', formData);
+  }
+
+  Future<void> updateReport({
+    required String reportId,
+    required Map<String, dynamic> data,
+  }) async {
+    await networkService.put(
+      url: '/api/v1/it-trouble-reports/$reportId',
+      data: data,
+    );
+  }
+
+  // ✅ New method to fetch a single report
+  Future<TroubleReport?> fetchSingleReport(String reportId) async {
+    try {
+      print("here $reportId");
+      final response = await networkService.get(
+        url: '/api/v1/it-trouble-reports/$reportId',
+      );
+
+      if (response.data['data'] == null) {
+        return null;
+      }
+
+      return TroubleReport.fromJson(response.data['data']);
+    } catch (e) {
+      print('❌ Failed to fetch single report: $e');
+      return null; // Safely handle errors
+    }
   }
 }

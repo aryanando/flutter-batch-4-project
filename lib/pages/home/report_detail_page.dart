@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_batch_4_project/blocs/trouble_report/trouble_report_cubit.dart';
+import 'package:flutter_batch_4_project/data/local_storage/auth_local_storage.dart';
+import 'package:flutter_batch_4_project/helpers/injector.dart';
 import 'package:flutter_batch_4_project/models/trouble_report_model.dart';
+import 'package:flutter_batch_4_project/pages/home/update_report_page.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:video_player/video_player.dart';
 
 class ReportDetailPage extends StatefulWidget {
@@ -15,10 +20,12 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
   final List<VideoPlayerController> _videoControllers = [];
   late List<bool> _isInitialized;
   late List<bool> _hasError;
+  late TroubleReport report;
 
   @override
   void initState() {
     super.initState();
+    report = widget.report;
 
     print('🟢 Total Videos: ${widget.report.videos.length}');
 
@@ -65,6 +72,9 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final currentUser = getIt.get<AuthLocalStorage>().getUser();
+    final isTechnician = currentUser?.unitId == 20;
+
     return Scaffold(
       appBar: AppBar(title: Text(widget.report.name)),
       body: SingleChildScrollView(
@@ -72,24 +82,21 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildInfoCard(
-                Icons.description, "Deskripsi", widget.report.description),
+            _buildInfoCard(Icons.description, "Deskripsi", report.description),
             const SizedBox(height: 12),
-            _buildInfoCard(Icons.info, "Status", widget.report.status,
-                statusColor: widget.report.status == 'solved'
-                    ? Colors.green
-                    : Colors.orange),
+            _buildInfoCard(Icons.info, "Status", report.status,
+                statusColor:
+                    report.status == 'solved' ? Colors.green : Colors.orange),
             const SizedBox(height: 12),
-            if (widget.report.result != null)
-              _buildInfoCard(
-                  Icons.check_circle, "Hasil", widget.report.result!),
+            if (report.result != null)
+              _buildInfoCard(Icons.check_circle, "Hasil", report.result!),
             const SizedBox(height: 12),
 
             // Photos Section
             _buildSectionHeader(Icons.photo, "Photos"),
-            if (widget.report.photos.isNotEmpty)
+            if (report.photos.isNotEmpty)
               Column(
-                children: widget.report.photos.map((photo) {
+                children: report.photos.map((photo) {
                   final photoUrl = photo.filePath.startsWith('http')
                       ? photo.filePath
                       : 'http://10.20.30.6:8081/storage/${photo.filePath}';
@@ -111,8 +118,8 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
 
             // Videos Section
             _buildSectionHeader(Icons.videocam, "Videos"),
-            if (widget.report.videos.isNotEmpty &&
-                _videoControllers.length == widget.report.videos.length)
+            if (report.videos.isNotEmpty &&
+                _videoControllers.length == report.videos.length)
               Column(
                 children: List.generate(_videoControllers.length, (index) {
                   final controller = _videoControllers[index];
@@ -175,6 +182,27 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
             else
               const Text('Tidak ada video.',
                   style: TextStyle(fontStyle: FontStyle.italic)),
+            const SizedBox(height: 16),
+
+            if (isTechnician)
+              ElevatedButton.icon(
+                icon: const Icon(Icons.build),
+                label: const Text('Update Report'),
+                onPressed: () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => UpdateReportPage(
+                          report: report), // Use local `report`
+                    ),
+                  );
+
+                  if (result == true) {
+                    print('here');
+                    await _reloadReport(); // 🔥 Call it here to refresh the details
+                  }
+                },
+              ),
           ],
         ),
       ),
@@ -223,5 +251,18 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
       ],
     );
+  }
+
+  Future<void> _reloadReport() async {
+    final refreshedReport = await context
+        .read<TroubleReportCubit>()
+        .fetchSingleReport(widget.report.id.toString());
+
+    if (refreshedReport != null) {
+      print("here 2");
+      setState(() {
+        report = refreshedReport;
+      });
+    }
   }
 }

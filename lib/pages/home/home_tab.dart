@@ -73,7 +73,7 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
                 .where((report) => report.status == 'pending')
                 .toList();
             final progressReports = myReports
-                .where((report) => report.status == 'on_progress')
+                .where((report) => report.status == 'in_progress')
                 .toList();
             final solvedReports =
                 myReports.where((report) => report.status == 'solved').toList();
