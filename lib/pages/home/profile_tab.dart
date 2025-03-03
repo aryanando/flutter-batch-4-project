@@ -7,6 +7,7 @@ import 'package:flutter_batch_4_project/consts/routes.dart';
 import 'package:flutter_batch_4_project/helpers/injector.dart';
 import 'package:flutter_batch_4_project/pages/home/edit_profile_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ProfileTab extends StatefulWidget {
   const ProfileTab({super.key});
@@ -35,7 +36,7 @@ class _ProfileTabState extends State<ProfileTab> {
                           user!.photo!.isNotEmpty)
                       ? (user.photo!.startsWith('http')
                           ? user.photo!
-                          : 'http://10.20.30.6:8081/storage/${user.photo}')
+                          : '${dotenv.env['API_BASE_URL']}/storage/${user.photo}')
                       : "https://akcdn.detik.net.id/community/media/visual/2022/12/25/lionel-messi_169.jpeg?w=600&q=90";
 
                   return Card(

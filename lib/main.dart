@@ -13,11 +13,16 @@ import 'package:flutter_batch_4_project/helpers/themes/dark_theme.dart';
 import 'package:flutter_batch_4_project/helpers/themes/light_theme.dart';
 import 'package:flutter_batch_4_project/models/trouble_report_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await dotenv.load(fileName: ".env");
+  print("✅ ENV LOADED");
+  print("API_BASE_URL: ${dotenv.env['API_BASE_URL']}");
 
   // Ensure Hive is initialized (already in your injector).
   final appDocDir = await getApplicationDocumentsDirectory();

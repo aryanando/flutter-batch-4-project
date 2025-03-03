@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_batch_4_project/helpers/extensions/widget_extension.dart';
 import 'package:flutter_batch_4_project/pages/home/report_detail_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_batch_4_project/blocs/trouble_report/trouble_report_cubit.dart';
@@ -119,62 +120,96 @@ class _AllReportsTabState extends State<AllReportsTab>
           final report = reports[index];
 
           return Card(
-            elevation: 2,
-            margin: const EdgeInsets.symmetric(vertical: 6),
-            child: ListTile(
-              contentPadding: const EdgeInsets.all(12),
-              leading: CircleAvatar(
-                backgroundColor: Colors.blueAccent,
-                child: Text(
-                  (index + 1).toString(),
-                  style: const TextStyle(color: Colors.white),
-                ),
-              ),
-              title: Text(
-                report.name,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-              subtitle: Column(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            elevation: 3,
+            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Report Title and Index
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '#${index + 1} - ${report.name}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blueAccent,
+                        ),
+                      ),
+                      if (isTechnician)
+                        const Icon(
+                          Icons.build,
+                          color: Colors.blueGrey,
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+
+                  // Description
                   Text(
                     report.description,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.black87,
+                    ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Status: ${report.status}',
-                    style: TextStyle(
-                      color: report.status == 'solved'
-                          ? Colors.green
-                          : Colors.orange,
-                      fontWeight: FontWeight.bold,
+                  const SizedBox(height: 8),
+
+                  // Status Chip
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: _getStatusColor(report.status),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Text(
+                        report.status.toUpperCase(),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
                 ],
               ),
-              trailing: isTechnician
-                  ? const Icon(
-                      Icons.build,
-                    )
-                  : null,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        ReportDetailPage(reportId: report.id.toString()),
-                  ),
-                );
-              },
             ),
-          );
+          ).onTap(() {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    ReportDetailPage(reportId: report.id.toString()),
+              ),
+            );
+          });
         },
       ),
     );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return Colors.orange;
+      case 'in_progress':
+        return Colors.blueAccent;
+      case 'solved':
+        return Colors.green;
+      default:
+        return Colors.grey;
+    }
   }
 }

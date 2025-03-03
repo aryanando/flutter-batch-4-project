@@ -3,6 +3,7 @@ import 'package:flutter_batch_4_project/data/local_storage/auth_local_storage.da
 import 'package:flutter_batch_4_project/data/remote_data/network_service/network_exception.dart';
 // import 'package:flutter_batch_4_project/helpers/env_config.dart';
 import 'package:flutter_batch_4_project/helpers/logging_interceptor.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class NetworkService {
   final requestTimeOut = 30;
@@ -15,7 +16,7 @@ class NetworkService {
     final baseOptions = BaseOptions(
       baseUrl:
           // ignore: dead_code
-          prod ? "https://api.batubhayangkara.com" : "http://172.16.2.200:8081",
+          prod ? "${dotenv.env['API_BASE_URL']}" : "http://172.16.2.200:8081",
       connectTimeout: Duration(seconds: requestTimeOut),
       receiveTimeout: Duration(seconds: requestTimeOut),
       responseType: ResponseType.json,
