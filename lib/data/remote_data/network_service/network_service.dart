@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_batch_4_project/data/local_storage/auth_local_storage.dart';
 import 'package:flutter_batch_4_project/data/remote_data/network_service/network_exception.dart';
+// import 'package:flutter_batch_4_project/helpers/env_config.dart';
 import 'package:flutter_batch_4_project/helpers/logging_interceptor.dart';
 
 class NetworkService {
@@ -10,9 +11,11 @@ class NetworkService {
   late final AuthLocalStorage authStorage;
 
   NetworkService(this.authStorage) {
+    bool prod = false;
     final baseOptions = BaseOptions(
-      // baseUrl: 'https://api.batubhayangkara.com/api/v1', // For Production
-      baseUrl: 'http://10.20.30.6:8081', // For Local Dev
+      baseUrl:
+          // ignore: dead_code
+          prod ? "https://api.batubhayangkara.com" : "http://172.16.2.200:8081",
       connectTimeout: Duration(seconds: requestTimeOut),
       receiveTimeout: Duration(seconds: requestTimeOut),
       responseType: ResponseType.json,
